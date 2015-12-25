@@ -38,9 +38,6 @@ echo "==> Remove the root user’s shell history"
 /bin/rm -f ~root/.bash_history
 unset HISTFILE
 
-echo "==> Installed packages"
-rpm -qa
-
 echo "==> yum -y clean all"
 yum -y clean all
 
