@@ -1,0 +1,82 @@
+{
+  "variables": {
+    "version": "1.0"
+  },
+  "builders": [
+    {
+      "name": "centos67-pe-puppet-382",
+      "vm_name": "centos67-pe-puppet-382",
+      "vmdk_name": "centos67-pe-puppet-382",
+      "type": "vmware-iso",
+      "communicator": "ssh",
+      "ssh_pty": "true",
+      "headless": false,
+      "disk_size": 16384,
+      "guest_os_type": "rhel6-64",
+      "iso_url": "./iso/CentOS-6.7-x86_64-minimal.iso",
+      "iso_checksum": "2ed5ea551dffc3e4b82847b3cee1f6cd748e8071",
+      "iso_checksum_type": "sha1",
+      "shutdown_command": "echo 'vagrant' | sudo -S /sbin/shutdown -P now",
+
+      "remote_host": "{{user `packer_remote_host`}}",
+      "remote_datastore": "{{user `packer_remote_datastore`}}",
+      "remote_username": "{{user `packer_remote_username`}}",
+      "remote_password": "{{user `packer_remote_password`}}",
+      "remote_type": "esx5",
+      "ssh_username": "root",
+      "ssh_password": "vagrant",
+      "ssh_wait_timeout": "60m",
+      "tools_upload_flavor": "linux",
+      "http_directory": ".",
+      "boot_wait": "7s",
+      "vmx_data": {
+        "memsize": "4096",
+        "numvcpus": "2",
+        "ethernet0.networkName": "{{user `packer_remote_network`}}",
+        "ethernet0.present": "TRUE",
+        "ethernet0.startConnected": "TRUE",
+        "ethernet0.virtualDev": "e1000",
+        "ethernet0.addressType": "generated",
+        "ethernet0.generatedAddressOffset": "0",
+        "ethernet0.wakeOnPcktRcv": "FALSE"
+
+      },
+      "vmx_data_post": {
+        "ide1:0.startConnected": "FALSE",
+        "ide1:0.clientDevice": "TRUE",
+        "ide1:0.fileName": "emptyBackingString",
+        "ethernet0.virtualDev": "vmxnet3"
+      },
+      "boot_command": [
+        "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/scripts/centos-6-kickstart.cfg<enter><wait>"
+      ]
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "iso/vmware-tools-linux.iso",
+      "destination": "/tmp/vmware-tools-linux.iso"
+    },
+    {
+      "type": "shell",
+      "execute_command": "echo 'vagrant' | {{ .Vars }} sudo -E -S sh '{{ .Path }}'",
+      "script": "scripts/centos-vagrant-settings.sh"
+    },
+    {
+      "type": "shell",
+      "execute_command": "echo 'vagrant' | {{ .Vars }} sudo -E -S sh '{{ .Path }}'",
+      "script": "scripts/centos-vmware-tools_install.sh"
+    },
+    {
+      "type": "shell",
+      "execute_command": "echo 'vagrant' | {{ .Vars }} sudo -E -S sh '{{ .Path }}'",
+      "script": "scripts/centos-install-pe-puppet-382.sh"
+    },
+    {
+      "type": "shell",
+      "execute_command": "echo 'vagrant' | {{ .Vars }} sudo -E -S sh '{{ .Path }}'",
+      "script": "scripts/centos-vmware-cleanup.sh"
+    }
+  ]
+}
